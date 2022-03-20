@@ -569,6 +569,7 @@ def test_filters(dictdb):
                 ])
                 )):
         for tested_filter in (filter, f'{filter} AND ALL', f'ALL AND {filter}'):
+            print('!!!', tested_filter)
             try:
                 documents = set(document['name'] for document in files.filter(tested_filter))
                 assert documents == expected, f'{documents} != {expected}'
@@ -576,11 +577,11 @@ def test_filters(dictdb):
                 e.message = f'While testing filter : {tested_filter}\n{e}'
                 e.args = (e.message,)
                 raise
-        all_documents = set(document.name for document in session.filter_documents("collection1", 'ALL'))
-        for tested_filter in ('(%s) OR ALL' % filter, 'ALL OR (%s)' % filter):
+        all_documents = set(document['name'] for document in files.filter('ALL'))
+        for tested_filter in (f'({filter}) OR ALL', f'ALL OR ({filter})'):
             try:
-                documents = set(document.name for document in session.filter_documents("collection1", tested_filter))
-                self.assertEqual(documents, all_documents)
+                documents = set(document['name'] for document in files.filter(tested_filter))
+                assert documents == all_documents, f'{documents} != {all_documents}'
             except Exception as e:
                 e.message = 'While testing filter : %s\n%s' % (str(tested_filter), str(e))
                 e.args = (e.message,)
